@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      # Override MONGODB_URI to point to the mongo container (not 127.0.0.1)
+      MONGODB_URI: mongodb://mongo:27017/goldfish_agent
+    volumes:
+      # Persist local fallback files (pending orders, conversations)
+      - ./data:/app/data
+      # Persist app logs
+      - ./webhook.log:/app/webhook.log
+      # RSA keys for WhatsApp Flow encryption (read-only inside container)
+      - ./keys:/app/keys:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:8.0
+    restart: always
+    volumes:
+      # Persist MongoDB data across container restarts
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo_data:

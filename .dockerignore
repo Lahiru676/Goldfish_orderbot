@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.env
+data/
+webhook.log
+.claude/
+docs/
